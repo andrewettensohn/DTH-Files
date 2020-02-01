@@ -1,0 +1,217 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+    var files = Model.PhysicalFiles;
+}
+
+<div class="text-center">
+    <h1 class="display-4">DTH Files</h1>
+</div><br />
+
+<nav>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            @using (Html.BeginForm())
+            {
+            <li class="breadcrumb-item">
+                <button class="btn btn-sm btn-link">Root</button>
+                <input type="submit" name="folderName" class="btn border d-none" value="">
+            </li>
+        }
+            @if (Model.CurrentDirectory != "Root")
+            {
+                <li class="breadcrumb-item"><button class="btn btn-sm disabled" id="subFolderName">@Model.CurrentDirectory</button></li>
+            }
+        </ol>
+    </nav><br />
+
+    <div id="dropContainer" class="border">
+        @if (Model.FileCount > 0)
+        {
+            <table class="table table-sm">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>
+                            File Name
+                        </th>
+                        <th>
+                            Size (bytes)
+                        </th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var file in files)
+                    {
+                        if (!file.IsDirectory)
+                        {
+                            <tr>
+                                <td>
+                                    <i class="fas fa-file"></i>
+                                    <b>@file.Name</b>
+                                </td>
+                                <td>
+                                    @file.Length.ToString("N0")
+                                </td>
+                                <td>
+                                    <button class="btn btn-outline-success" onclick="downloadFile('@file.Name')">Download</button>
+                                </td>
+                                <td>
+                                    <button class="btn btn-outline-danger text-dark" onclick="deleteFile('@file.Name')">Delete</button>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                <td>
+                                    @using (Html.BeginForm())
+                                    {
+                                        <i class="fas fa-folder"></i>
+                                        <input type="submit" name="folderName" class="btn btn-link" value="@file.Name">
+                                    }
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td>
+                                    <button class="btn btn-outline-danger text-dark" onclick="deleteFile('@file.Name')">Delete</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <center>
+                <div class="container pt-3">
+                    <div class="row">
+                        <div class="col-sm">
+                            <i class="fas fa-file-upload fa-6x"></i>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm">
+                            <p class="text-muted">Drag a File Here to Upload</p>
+                        </div>
+                    </div>
+                </div>
+            </center>
+        }
+    </div>
+    <br />
+
+    <div class="input-group">
+        <input type="file" class="btn border-secondary" id="fileInput" />
+        <button class="btn border-secondary input-group-append" id="fileUploadButton">Upload File</button>
+    </div><br />
+
+    @if (Model.CurrentDirectory == "Root")
+    {
+        <div class="mt-3">
+            <a class="btn border-secondary text-muted" data-toggle="collapse" href="#collapseNewFolder" role="button">
+                <i class="fas fa-folder"></i>
+                Create New Folder
+            </a>
+        </div>
+        <div class="collapse" id="collapseNewFolder">
+            <div class="card card-body">
+                <form method="POST" onsubmit="createFolder()">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="New Folder Name" id="inputCreateFolder">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button" id="btnCreateFolder">Create</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    <script>
+
+        var currentFolder = $("#subFolderName").text();
+        if (currentFolder == "") {
+            currentFolder = "Root"
+        }
+
+        let file = document.getElementById("fileInput");
+        let formData = new FormData();
+
+        /*UPLOAD ON DROP*/
+        dropContainer.ondragover = dropContainer.ondragenter = function (evt) {
+            evt.preventDefault();
+        };
+
+        dropContainer.ondrop = function (evt) {
+
+            fileInput.files = evt.dataTransfer.files;
+            evt.preventDefault();
+            formData.append("file", file.files[0]);
+
+            fetch(`api/Streaming/${currentFolder}`,
+                {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(() => location.reload())
+                .catch("Failed to upload file.")
+        };
+
+        /*UPLOAD ON FILE SELECTION*/
+        $("#fileUploadButton").click(function () {
+            formData.append("file", file.files[0]);
+            fetch(`api/Streaming/${currentFolder}`,
+                {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(() => location.reload())
+                .catch("Failed to upload file.")
+        });
+
+
+        /*FOLDER CREATION*/
+        function createFolder() {
+
+            var newFolderName = $("#inputCreateFolder").val();
+
+            fetch(`api/Streaming/CreateFolder/${newFolderName}`,
+                {
+                    method: 'POST'
+                })
+                .then(() => location.reload())
+                .catch("Failed to create new folder")
+
+        }
+
+        /*DOWNLOAD FILE*/
+        function downloadFile(fileName) {
+
+            fetch(`api/Streaming/${fileName}`)
+                .then(resp => resp.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(() => alert('File Failed to download'));
+        }
+
+        /*DELETE FILE*/
+        function deleteFile(fileName) {
+
+            fetch(`api/Streaming/${currentFolder}/${fileName}`, {
+                method: 'DELETE'
+            })
+                .then(() => location.reload())
+                .catch(error => console.error('Unable to delete the requested file.', error));
+
+        }
+    </script>

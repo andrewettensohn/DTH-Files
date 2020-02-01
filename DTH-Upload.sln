@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DTH-Upload", "DTH-Upload.csproj", "{AD5153D6-FDD6-4004-8266-955C8E79C8FF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AD5153D6-FDD6-4004-8266-955C8E79C8FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD5153D6-FDD6-4004-8266-955C8E79C8FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD5153D6-FDD6-4004-8266-955C8E79C8FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD5153D6-FDD6-4004-8266-955C8E79C8FF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BD68DFBC-BF43-4910-BF9E-AAD19F6FFBB2}
+	EndGlobalSection
+EndGlobal
